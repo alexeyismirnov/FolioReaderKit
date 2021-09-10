@@ -44,7 +44,7 @@ buildFramework() {
     OTHER_CFLAGS="-fembed-bitcode" \
     -workspace "$WORKSPACE" \
     -scheme "$scheme" \
-    ONLY_ACTIVE_ARCH=NO \
+    ONLY_ACTIVE_ARCH=YES \
     -configuration "$CONFIGURATION" \
     -derivedDataPath "${dataPath}/${framework}" \
   	-sdk "$sdk" \
@@ -55,7 +55,7 @@ buildFramework() {
     OTHER_CFLAGS="-fembed-bitcode" \
     -workspace "$WORKSPACE" \
     -scheme "$scheme" \
-    ONLY_ACTIVE_ARCH=NO \
+    ONLY_ACTIVE_ARCH=YES \
     -configuration "$CONFIGURATION" \
     -derivedDataPath "${simulatorDataPath}/${framework}" \
     -sdk "$simulatorSdk" \
