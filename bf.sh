@@ -83,7 +83,7 @@ createFatFramework() {
     rsync --remove-source-files -azv $outputDir/$frameworkName $outputDir/$frameworkWithFormat
 
     # update Info.plist
-    /usr/libexec/PlistBuddy -c "Add :CFBundleSupportedPlatforms: string iPhoneSimulator" "${outputDir}/${frameworkWithFormat}/Info.plist"
+#    /usr/libexec/PlistBuddy -c "Add :CFBundleSupportedPlatforms: string iPhoneSimulator" "${outputDir}/${frameworkWithFormat}/Info.plist"
 
     # copy simulator architectures
     cp -R $simFramework/Modules/$frameworkName.swiftmodule/. $outputDir/$frameworkWithFormat/Modules/$frameworkName.swiftmodule/
