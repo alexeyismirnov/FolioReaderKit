@@ -2,6 +2,9 @@
 set -o pipefail
 set -e
 
+# HOW TO BUILD
+# ./bf.sh -w FolioReaderKit.xcworkspace -c Release -o ./build FolioReaderKit
+
 usage="
 $(basename "$0") [-h] [-w workspace] [-c configuration] [-o output]
 
