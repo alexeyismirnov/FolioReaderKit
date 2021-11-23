@@ -162,16 +162,7 @@ open class FolioReaderContainer: UIViewController {
                 self.book = parsedBook
                 self.folioReader.isReaderOpen = true
 
-                // Reload data
-                DispatchQueue.main.async {
-                    // Add audio player if needed
-                    if self.book.hasAudio || self.readerConfig.enableTTS {
-                        self.addAudioPlayer()
-                    }
-                    self.centerViewController?.reloadData()
-                    self.folioReader.isReaderReady = true
-                    self.folioReader.delegate?.folioReader?(self.folioReader, didFinishedLoading: self.book)
-                }
+               
             } catch {
                 self.errorOnLoad = true
                 self.alert(message: error.localizedDescription)
@@ -184,6 +175,17 @@ open class FolioReaderContainer: UIViewController {
 
         if (self.errorOnLoad == true) {
             self.dismiss()
+        }
+        
+        // Reload data
+        DispatchQueue.main.async {
+            // Add audio player if needed
+            if self.book.hasAudio || self.readerConfig.enableTTS {
+                self.addAudioPlayer()
+            }
+            self.centerViewController?.reloadData()
+            self.folioReader.isReaderReady = true
+            self.folioReader.delegate?.folioReader?(self.folioReader, didFinishedLoading: self.book)
         }
     }
 

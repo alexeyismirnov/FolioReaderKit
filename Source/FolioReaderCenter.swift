@@ -207,7 +207,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         pagesForCurrentPage(currentPage)
         pageIndicatorView?.reloadView(updateShadow: true)
     }
-
+    
     override open func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
@@ -300,7 +300,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         self.collectionView.reloadData()
         self.configureNavBarButtons()
         self.setCollectionViewProgressiveDirection()
-
+        
         if self.readerConfig.loadSavedPositionForCurrentBook {
             guard let position = folioReader.savedPositionForCurrentBook, let pageNumber = position["pageNumber"] as? Int, pageNumber > 0 else {
                 self.currentPageNumber = 1
@@ -445,7 +445,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         guard let cell = cell, let readerContainer = readerContainer else {
             return UICollectionViewCell()
         }
-
+        
         cell.setup(withReaderContainer: readerContainer)
         cell.pageNumber = indexPath.row+1
         cell.webView?.scrollView.delegate = self
@@ -631,6 +631,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
             currentPage = page
             self.previousPageNumber = page.pageNumber-1
             self.currentPageNumber = page.pageNumber
+            
         } else {
             let currentIndexPath = getCurrentIndexPath()
             currentPage = collectionView.cellForItem(at: currentIndexPath) as? FolioReaderPage
@@ -771,8 +772,8 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
             completion?()
             return
         }
-
-        UIView.animate(withDuration: animated ? 0.3 : 0, delay: 0, options: UIView.AnimationOptions(), animations: { () -> Void in
+        
+        UIView.animate(withDuration: 0, delay: 0, options: UIView.AnimationOptions(), animations: { () -> Void in
             self.collectionView.scrollToItem(at: indexPath, at: .direction(withConfiguration: self.readerConfig), animated: false)
         }) { (finished: Bool) -> Void in
             completion?()
@@ -1192,6 +1193,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
     // MARK: - ScrollView Delegate
 
+    
     open func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         self.isScrolling = true
         clearRecentlyScrolled()
@@ -1317,7 +1319,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
     open func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         scrollScrubber?.scrollViewDidEndScrollingAnimation(scrollView)
     }
-
+    
     // MARK: NavigationBar Actions
 
     @objc func closeReader(_ sender: UIBarButtonItem) {
@@ -1426,7 +1428,7 @@ extension FolioReaderCenter: FolioReaderPageDelegate {
             if isFirstLoad {
                 updateCurrentPage(page)
                 isFirstLoad = false
-
+                
                 if (self.currentPageNumber == pageNumber && pageOffset > 0) {
                     page.scrollPageToOffset(pageOffset!, animated: false)
                 }

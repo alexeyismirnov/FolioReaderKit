@@ -129,9 +129,9 @@ open class FolioReader: NSObject {
     }
 
     /// UserDefault for the current ePub file.
-    fileprivate var defaults: FolioReaderUserDefaults {
+    fileprivate lazy var defaults: FolioReaderUserDefaults =  {
         return FolioReaderUserDefaults(withIdentifier: self.readerContainer?.readerConfig.identifier)
-    }
+    }()
 
     // Add necessary observers
     fileprivate func addObservers() {
