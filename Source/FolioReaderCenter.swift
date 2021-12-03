@@ -1424,13 +1424,13 @@ extension FolioReaderCenter: FolioReaderPageDelegate {
             let pageNumber = position["pageNumber"] as? Int
             let offset = self.readerConfig.isDirection(position["pageOffsetY"], position["pageOffsetX"], position["pageOffsetY"]) as? CGFloat
             let pageOffset = offset
-
+            
             if isFirstLoad {
                 updateCurrentPage(page)
                 isFirstLoad = false
                 
                 if (self.currentPageNumber == pageNumber && pageOffset > 0) {
-                    page.scrollPageToOffset(pageOffset!, animated: false)
+                    page.scrollPageToOffset(pageOffset!, animated: true)
                 }
             } else if (self.isScrolling == false && folioReader.needsRTLChange == true) {
                 page.scrollPageToBottom()
