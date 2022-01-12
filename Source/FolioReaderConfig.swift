@@ -145,7 +145,7 @@ open class FolioReaderConfig: NSObject {
     open var canChangeFontStyle = true
     
     /// Should hide navigation bar on user tap
-    open var shouldHideNavigationOnTap = true
+    open var shouldHideNavigationOnTap = false
 
     /// Allow sharing option, if `false` will hide all sharing icons and options
     open var allowSharing = true
@@ -157,7 +157,7 @@ open class FolioReaderConfig: NSObject {
     open var displayTitle = false
 
     /// Hide the page indicator
-    open var hidePageIndicator = false
+    open var hidePageIndicator = true
 
     /// Go to saved position when open a book
     open var loadSavedPositionForCurrentBook = true
