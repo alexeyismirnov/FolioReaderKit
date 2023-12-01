@@ -5,19 +5,26 @@ import PackageDescription
 
 let package = Package(
     name: "FolioReaderKit",
+    platforms: [ .iOS("16.0") ],
+
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "FolioReaderKit",
             targets: ["FolioReaderKit"]),
     ],
+    dependencies: [
+        .package(name: "ZipArchive", url: "https://github.com/ZipArchive/ZipArchive.git", "2.4.1"..<"2.4.2"),
+        .package(url: "https://github.com/cxa/MenuItemKit.git", from: "4.0.0"),
+        .package(url: "https://github.com/tadija/AEXML.git", from: "4.6.1"),
+        .package(url: "https://github.com/ArtSabintsev/FontBlaster.git", from: "5.2.0"),
+        .package(name: "Realm", url: "https://github.com/realm/realm-cocoa.git", from: "10.20.0"),
+        .package(url: "https://github.com/tsolomko/SWCompression.git", from: "4.7.0")
+    ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "FolioReaderKit"),
-        .testTarget(
-            name: "FolioReaderKitTests",
-            dependencies: ["FolioReaderKit"]),
+            name: "FolioReaderKit",
+            dependencies: ["AEXML", "ZipArchive", "MenuItemKit","FontBlaster", .product(name: "RealmSwift", package: "Realm"), "SWCompression"],
+            resources: [ .process("Resources") ]),
+        
     ]
 )
