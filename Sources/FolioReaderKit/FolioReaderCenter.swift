@@ -358,7 +358,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         guard let currentPage = self.currentPage, let webView = currentPage.webView else {
             return
         }
-
+        
         let pageScrollView = webView.scrollView
 
         // Get internal page offset before layout change
