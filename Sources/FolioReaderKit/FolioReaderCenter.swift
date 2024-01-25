@@ -1373,7 +1373,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
     @objc func presentFontsMenu() {
         folioReader.saveReaderState()
         hideBars()
-
+        
         let menu = FolioReaderFontsMenu(folioReader: folioReader, readerConfig: readerConfig)
         menu.modalPresentationStyle = .custom
 

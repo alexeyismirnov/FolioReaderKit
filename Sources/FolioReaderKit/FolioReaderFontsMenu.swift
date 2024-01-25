@@ -176,7 +176,7 @@ class FolioReaderFontsMenu: UIViewController, UIGestureRecognizerDelegate {
         line2.backgroundColor = self.readerConfig.nightModeSeparatorColor
         menuView.addSubview(line2)
 
-        /*
+        
         // Font slider size
         let slider = HADiscreteSlider(frame: CGRect(x: 60, y: line2.frame.origin.y+2, width: view.frame.width-120, height: 55))
         slider.tickStyle = ComponentStyle.rounded
@@ -201,7 +201,7 @@ class FolioReaderFontsMenu: UIViewController, UIGestureRecognizerDelegate {
         })
 
         menuView.addSubview(slider)
-*/
+
         // Font icons
         let fontSmallView = UIImageView(frame: CGRect(x: 20, y: line2.frame.origin.y+14, width: 30, height: 30))
         fontSmallView.image = fontSmallNormal
@@ -288,7 +288,7 @@ class FolioReaderFontsMenu: UIViewController, UIGestureRecognizerDelegate {
     }
     
     // MARK: - Font slider changed
-    /*
+    
     @objc func sliderValueChanged(_ sender: HADiscreteSlider) {
         guard
             (self.folioReader.readerCenter?.currentPage != nil),
@@ -299,7 +299,7 @@ class FolioReaderFontsMenu: UIViewController, UIGestureRecognizerDelegate {
         self.folioReader.currentFontSize = fontSize
     }
 
-    */
+    
     
     // MARK: - Gestures
     
