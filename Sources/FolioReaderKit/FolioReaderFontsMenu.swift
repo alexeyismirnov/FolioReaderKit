@@ -98,7 +98,7 @@ class FolioReaderFontsMenu: UIViewController, UIGestureRecognizerDelegate {
         view.addGestureRecognizer(tapGesture)
         
         let bottomInset = UIApplication.shared.keyWindow?.safeAreaInsets.bottom ?? 0
-        print("BB \(bottomInset)")
+
         // Menu view
         var visibleHeight: CGFloat = self.readerConfig.canChangeScrollDirection ? 222 : 170
         visibleHeight = self.readerConfig.canChangeFontStyle ? visibleHeight : visibleHeight - 55
