@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "FolioReaderKit",
-    platforms: [ .iOS("16.0") ],
+    platforms: [ .iOS("15.0") ],
 
     products: [
         .library(
