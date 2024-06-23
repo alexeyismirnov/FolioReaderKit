@@ -8,7 +8,7 @@
 
 import UIKit
 
-class FolioReaderPlayerMenu: UIViewController, SMSegmentViewDelegate, UIGestureRecognizerDelegate {
+class FolioReaderPlayerMenu: UIViewController, UIGestureRecognizerDelegate {
 
     var menuView: UIView!
     var playPauseBtn: UIButton!
@@ -32,6 +32,7 @@ class FolioReaderPlayerMenu: UIViewController, SMSegmentViewDelegate, UIGestureR
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        /*
         // Do any additional setup after loading the view.
         self.view.backgroundColor = UIColor.clear
 
@@ -206,6 +207,7 @@ class FolioReaderPlayerMenu: UIViewController, SMSegmentViewDelegate, UIGestureR
         styleOptionBtns.append(style0)
         styleOptionBtns.append(style1)
         styleOptionBtns.append(style2)
+         */
     }
 
 
@@ -230,6 +232,7 @@ class FolioReaderPlayerMenu: UIViewController, SMSegmentViewDelegate, UIGestureR
 
     // MARK: - SMSegmentView delegate
 
+    /*
     func segmentView(_ segmentView: SMSegmentView, didSelectSegmentAtIndex index: Int) {
         guard viewDidAppear else { return }
 
@@ -278,13 +281,14 @@ class FolioReaderPlayerMenu: UIViewController, SMSegmentViewDelegate, UIGestureR
             self.folioReader.readerCenter?.showBars()
         }
     }
+     
     
     // MARK: - Gestures
     
     @objc func tapGesture() {
         closeView()
     }
-    
+    */
     
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         if gestureRecognizer is UITapGestureRecognizer && touch.view == view {

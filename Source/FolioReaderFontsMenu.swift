@@ -67,7 +67,7 @@ public enum FolioReaderFontSize: Int {
     }
 }
 
-class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRecognizerDelegate {
+class FolioReaderFontsMenu: UIViewController, UIGestureRecognizerDelegate {
     var menuView: UIView!
 
     fileprivate var readerConfig: FolioReaderConfig
@@ -87,6 +87,7 @@ class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRe
     override func viewDidLoad() {
         super.viewDidLoad()
 
+    
         // Do any additional setup after loading the view.
         self.view.backgroundColor = UIColor.clear
 
@@ -95,11 +96,13 @@ class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRe
         tapGesture.numberOfTapsRequired = 1
         tapGesture.delegate = self
         view.addGestureRecognizer(tapGesture)
+        
+        let bottomInset = UIApplication.shared.keyWindow?.safeAreaInsets.bottom ?? 0
 
         // Menu view
         var visibleHeight: CGFloat = self.readerConfig.canChangeScrollDirection ? 222 : 170
         visibleHeight = self.readerConfig.canChangeFontStyle ? visibleHeight : visibleHeight - 55
-        menuView = UIView(frame: CGRect(x: 0, y: view.frame.height-visibleHeight, width: view.frame.width, height: view.frame.height))
+        menuView = UIView(frame: CGRect(x: 0, y: view.frame.height-visibleHeight - bottomInset, width: view.frame.width, height: view.frame.height))
         menuView.backgroundColor = self.folioReader.isNight(self.readerConfig.nightModeMenuBackground, UIColor.white)
         menuView.autoresizingMask = .flexibleWidth
         menuView.layer.shadowColor = UIColor.black.cgColor
@@ -128,21 +131,15 @@ class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRe
 
         // Day night mode
         let dayNight = SMSegmentView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 55),
-                                     separatorColour: self.readerConfig.nightModeSeparatorColor,
-                                     separatorWidth: 1,
-                                     segmentProperties:  [
-                                        keySegmentTitleFont: UIFont(name: "Avenir-Light", size: 17)!,
-                                        keySegmentOnSelectionColour: UIColor.clear,
-                                        keySegmentOffSelectionColour: UIColor.clear,
-                                        keySegmentOnSelectionTextColour: selectedColor,
-                                        keySegmentOffSelectionTextColour: normalColor,
-                                        keyContentVerticalMargin: 17 as AnyObject
-            ])
-        dayNight.delegate = self
+                                     dividerColour: self.readerConfig.nightModeSeparatorColor,
+                                     dividerWidth: 1,
+                                     segmentAppearance: SMSegmentAppearance())
         dayNight.tag = 1
         dayNight.addSegmentWithTitle(self.readerConfig.localizedFontMenuDay, onSelectionImage: sunSelected, offSelectionImage: sunNormal)
         dayNight.addSegmentWithTitle(self.readerConfig.localizedFontMenuNight, onSelectionImage: moonSelected, offSelectionImage: moonNormal)
-        dayNight.selectSegmentAtIndex(self.folioReader.nightMode ? 1 : 0)
+        dayNight.selectedSegmentIndex = self.folioReader.nightMode ? 1 : 0
+        dayNight.addTarget(self, action: #selector(selectSegmentInSegmentView(segmentView:)), for: .valueChanged)
+
         menuView.addSubview(dayNight)
 
 
@@ -154,29 +151,24 @@ class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRe
         // Fonts adjust
         let fontNameHeight: CGFloat = self.readerConfig.canChangeFontStyle ? 55: 0
         let fontName = SMSegmentView(frame: CGRect(x: 15, y: line.frame.height+line.frame.origin.y, width: view.frame.width-30, height: fontNameHeight),
-                                     separatorColour: UIColor.clear,
-                                     separatorWidth: 0,
-                                     segmentProperties:  [
-                                        keySegmentOnSelectionColour: UIColor.clear,
-                                        keySegmentOffSelectionColour: UIColor.clear,
-                                        keySegmentOnSelectionTextColour: selectedColor,
-                                        keySegmentOffSelectionTextColour: normalColor,
-                                        keyContentVerticalMargin: 17 as AnyObject
-            ])
-        fontName.delegate = self
+                                     dividerColour: UIColor.clear,
+                                     dividerWidth: 0,
+                                     segmentAppearance:  SMSegmentAppearance())
         fontName.tag = 2
 
-        fontName.addSegmentWithTitle("Andada", onSelectionImage: nil, offSelectionImage: nil)
-        fontName.addSegmentWithTitle("Lato", onSelectionImage: nil, offSelectionImage: nil)
-        fontName.addSegmentWithTitle("Lora", onSelectionImage: nil, offSelectionImage: nil)
-        fontName.addSegmentWithTitle("Raleway", onSelectionImage: nil, offSelectionImage: nil)
+        fontName.addSegmentWithTitle("Andada")
+        fontName.addSegmentWithTitle("Lato")
+        fontName.addSegmentWithTitle("Lora")
+        fontName.addSegmentWithTitle("Raleway")
 
 //        fontName.segments[0].titleFont = UIFont(name: "Andada-Regular", size: 18)!
 //        fontName.segments[1].titleFont = UIFont(name: "Lato-Regular", size: 18)!
 //        fontName.segments[2].titleFont = UIFont(name: "Lora-Regular", size: 18)!
 //        fontName.segments[3].titleFont = UIFont(name: "Raleway-Regular", size: 18)!
 
-        fontName.selectSegmentAtIndex(self.folioReader.currentFont.rawValue)
+        fontName.selectedSegmentIndex = self.folioReader.currentFont.rawValue
+        fontName.addTarget(self, action: #selector(selectSegmentInSegmentView(segmentView:)), for: .valueChanged)
+
         menuView.addSubview(fontName)
 
         // Separator 2
@@ -184,6 +176,7 @@ class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRe
         line2.backgroundColor = self.readerConfig.nightModeSeparatorColor
         menuView.addSubview(line2)
 
+        
         // Font slider size
         let slider = HADiscreteSlider(frame: CGRect(x: 60, y: line2.frame.origin.y+2, width: view.frame.width-120, height: 55))
         slider.tickStyle = ComponentStyle.rounded
@@ -239,17 +232,9 @@ class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRe
 
         // Layout direction
         let layoutDirection = SMSegmentView(frame: CGRect(x: 0, y: line3.frame.origin.y, width: view.frame.width, height: 55),
-                                            separatorColour: self.readerConfig.nightModeSeparatorColor,
-                                            separatorWidth: 1,
-                                            segmentProperties:  [
-                                                keySegmentTitleFont: UIFont(name: "Avenir-Light", size: 17)!,
-                                                keySegmentOnSelectionColour: UIColor.clear,
-                                                keySegmentOffSelectionColour: UIColor.clear,
-                                                keySegmentOnSelectionTextColour: selectedColor,
-                                                keySegmentOffSelectionTextColour: normalColor,
-                                                keyContentVerticalMargin: 17 as AnyObject
-            ])
-        layoutDirection.delegate = self
+                                            dividerColour: self.readerConfig.nightModeSeparatorColor,
+                                            dividerWidth: 1,
+                                            segmentAppearance:  SMSegmentAppearance())
         layoutDirection.tag = 3
         layoutDirection.addSegmentWithTitle(self.readerConfig.localizedLayoutVertical, onSelectionImage: verticalSelected, offSelectionImage: verticalNormal)
         layoutDirection.addSegmentWithTitle(self.readerConfig.localizedLayoutHorizontal, onSelectionImage: horizontalSelected, offSelectionImage: horizontalNormal)
@@ -262,17 +247,23 @@ class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRe
 
         switch scrollDirection ?? .vertical {
         case .vertical, .defaultVertical:
-            layoutDirection.selectSegmentAtIndex(FolioReaderScrollDirection.vertical.rawValue)
+            layoutDirection.selectedSegmentIndex = FolioReaderScrollDirection.vertical.rawValue
         case .horizontal, .horizontalWithVerticalContent:
-            layoutDirection.selectSegmentAtIndex(FolioReaderScrollDirection.horizontal.rawValue)
+            layoutDirection.selectedSegmentIndex = FolioReaderScrollDirection.horizontal.rawValue
         }
+        
+        layoutDirection.addTarget(self, action: #selector(selectSegmentInSegmentView(segmentView:)), for: .valueChanged)
+
         menuView.addSubview(layoutDirection)
+         
     }
 
     // MARK: - SMSegmentView delegate
 
-    func segmentView(_ segmentView: SMSegmentView, didSelectSegmentAtIndex index: Int) {
+    @objc func selectSegmentInSegmentView(segmentView: SMSegmentView) {
         guard (self.folioReader.readerCenter?.currentPage) != nil else { return }
+        
+        let index = segmentView.selectedSegmentIndex
 
         if segmentView.tag == 1 {
 
@@ -307,6 +298,8 @@ class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRe
         
         self.folioReader.currentFontSize = fontSize
     }
+
+    
     
     // MARK: - Gestures
     

@@ -9,8 +9,6 @@
 import UIKit
 import WebKit
 
-import ZFDragableModalTransition
-
 /// Protocol which is used from `FolioReaderCenter`s.
 @objc public protocol FolioReaderCenterDelegate: class {
 
@@ -57,7 +55,6 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
     var pages: [String]!
     var totalPages: Int = 0
     var tempFragment: String?
-    var animator: ZFModalTransitionAnimator!
     var pageIndicatorView: FolioReaderPageIndicator?
     var pageIndicatorHeight: CGFloat = 20
     var recentlyScrolled = false
@@ -361,7 +358,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         guard let currentPage = self.currentPage, let webView = currentPage.webView else {
             return
         }
-
+        
         let pageScrollView = webView.scrollView
 
         // Get internal page offset before layout change
@@ -415,7 +412,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         guard self.readerConfig.shouldHideNavigationOnTap == true else {
             return
         }
-
+        
         let shouldHide = !self.navigationController!.isNavigationBarHidden
         if shouldHide == false {
             self.configureNavBar()
@@ -481,8 +478,16 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
         let webHeight = UIScreen.main.bounds.height
         // Inject CSS
-        let jsFilePath = Bundle.frameworkBundle().path(forResource: "Bridge", ofType: "js")
-        let cssFilePath = Bundle.frameworkBundle().path(forResource: "Style", ofType: "css")
+        var bundle: Bundle
+        
+        #if SWIFT_PACKAGE
+        bundle = Bundle.module
+        #else
+        bundle = Bundle(for: FolioReader.self)
+        #endif
+        let jsFilePath = bundle.path(forResource: "Bridge", ofType: "js")
+        let cssFilePath = bundle.path(forResource: "Style", ofType: "css")
+        
         let cssTag = "<link rel=\"stylesheet\" type=\"text/css\" href=\"\(cssFilePath!)\">"
         let jsTag = "<script type=\"text/javascript\" src=\"\(jsFilePath!)\"></script>" +
         "<script type=\"text/javascript\">setMediaOverlayStyleColors(\(mediaOverlayStyleColors))</script>"
@@ -1375,10 +1380,11 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
     @objc func presentFontsMenu() {
         folioReader.saveReaderState()
         hideBars()
-
+        
         let menu = FolioReaderFontsMenu(folioReader: folioReader, readerConfig: readerConfig)
         menu.modalPresentationStyle = .custom
 
+        /*
         animator = ZFModalTransitionAnimator(modalViewController: menu)
         animator.isDragable = false
         animator.bounces = false
@@ -1388,6 +1394,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         animator.direction = ZFModalTransitonDirection.bottom
 
         menu.transitioningDelegate = animator
+         */
         self.present(menu, animated: true, completion: nil)
     }
 
@@ -1401,6 +1408,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         let menu = FolioReaderPlayerMenu(folioReader: folioReader, readerConfig: readerConfig)
         menu.modalPresentationStyle = .custom
 
+        /*
         animator = ZFModalTransitionAnimator(modalViewController: menu)
         animator.isDragable = true
         animator.bounces = false
@@ -1410,6 +1418,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         animator.direction = ZFModalTransitonDirection.bottom
 
         menu.transitioningDelegate = animator
+         */
         present(menu, animated: true, completion: nil)
     }
 

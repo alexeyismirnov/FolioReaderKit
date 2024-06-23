@@ -206,7 +206,7 @@ function getReadingTime() {
  */
 var getAnchorOffset = function(target, horizontal) {
     var elem = document.getElementById(target);
-    
+        
     if (!elem) {
         elem = document.getElementsByName(target)[0];
     }
@@ -217,6 +217,19 @@ var getAnchorOffset = function(target, horizontal) {
     
     return elem.offsetTop;
 }
+
+
+var scrollToElement = function(name) {
+     const element = document.getElementById(name);
+     if (element == null) {
+        console.log("cannot find element with name '" + name + "'");
+        return false;
+     }
+
+     element.scrollIntoView({"behavior": "smooth"});
+     return true;
+  }
+
 
 function findElementWithID(node) {
     if( !node || node.tagName == "BODY")

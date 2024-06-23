@@ -392,7 +392,7 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
 
        @objc open func handleTapGesture(_ recognizer: UITapGestureRecognizer) {
            self.delegate?.pageTap?(recognizer)
-           
+                      
            if let _navigationController = self.folioReader.readerCenter?.navigationController, (_navigationController.isNavigationBarHidden == true) {
                let selected = webView?.js("getSelectedText()")
                
@@ -425,6 +425,8 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
     open func scrollPageToOffset(_ offset: CGFloat, animated: Bool) {
         let pageOffsetPoint = self.readerConfig.isDirection(CGPoint(x: 0, y: offset), CGPoint(x: offset, y: 0), CGPoint(x: 0, y: offset))
         webView?.scrollView.setContentOffset(pageOffsetPoint, animated: animated)
+        
+        // webView?.js("scrollToOffset('\(offset)')", completionHandler:nil)
     }
 
     /**
@@ -454,13 +456,10 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
      */
     open func handleAnchor(_ anchor: String,  avoidBeginningAnchors: Bool, animated: Bool) {
         if !anchor.isEmpty {
-//            let offset = getAnchorOffset(anchor)
-            
             getAnchorOffset(anchor) { (result) in
                 guard (result != nil) else {return}
-                   
                    let offset = CGFloat((result! as NSString).floatValue)
-                   
+            
                    switch self.readerConfig.scrollDirection {
                    case .vertical, .defaultVertical:
                        let isBeginning = (offset < self.frame.forDirection(withConfiguration: self.readerConfig) * 0.5)
@@ -493,8 +492,9 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
 //            return CGFloat((strOffset as NSString).floatValue)
 //        }
 
-         webView?.js("getAnchorOffset('\(anchor)', \(horizontal.description))", completionHandler:completionHandler)
-        
+        webView?.js("getAnchorOffset('\(anchor)', \(horizontal.description))", completionHandler:completionHandler)
+        // webView?.js("scrollToElement('\(anchor)')", completionHandler:nil)
+
 //        return CGFloat(0)
     }
 

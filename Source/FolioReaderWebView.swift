@@ -416,21 +416,19 @@ open class FolioReaderWebView: WKWebView {
     // MARK: - Java Script Bridge
     
     open func js(_ script: String,completionHandler: ((String?) -> Void)? = nil) {
-        
-//        self.evaluateJavaScript(script,completionHandler)
         self.evaluateJavaScript(script) { (any, error) in
             if(error == nil){
                 if completionHandler != nil {
-                    completionHandler!(any as? String)
+                    if (any != nil) {
+                        completionHandler!(String(describing: any!))
+
+                    } else {
+                        completionHandler!(nil)
+                    }
                 }
             }
             
-//            guard (any != nil) else {return}
-//            completionHandler!(any as? String)
         }
-//        let callback = self.stringByEvaluatingJavaScript(from: script)
-//        if callback.isEmpty { return nil }
-//        return callback
     }
     
     // MARK: WebView
