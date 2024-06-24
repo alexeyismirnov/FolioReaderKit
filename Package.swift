@@ -1,14 +1,30 @@
+// swift-tools-version: 5.9
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
 import PackageDescription
 
 let package = Package(
-	name: "FolioReaderKit",
-	dependencies: [
-		.Package(url: "https://github.com/ZipArchive/ZipArchive.git", majorVersion: 2, minor: 1),
-		.Package(url: "https://github.com/cxa/MenuItemKit.git", majorVersion: 3, minor: 0),
-		.Package(url: "https://github.com/zoonooz/ZFDragableModalTransition.git", majorVersion: 0, minor: 6),
-		.Package(url: "https://github.com/tadija/AEXML.git", majorVersion: 4, minor: 2),
-		.Package(url: "https://github.com/ArtSabintsev/FontBlaster.git", majorVersion: 4, minor: 0),
-		.Package(url: "https://github.com/fantim/JSQWebViewController.git", majorVersion: 6, minor: 1),
-		.Package(url: "https://github.com/realm/realm-cocoa.git", majorVersion: 3, minor: 1),
-	]
+    name: "FolioReaderKit",
+    platforms: [ .iOS("15.0") ],
+
+    products: [
+        .library(
+            name: "FolioReaderKit",
+            targets: ["FolioReaderKit"]),
+    ],
+    dependencies: [
+        .package(name: "ZipArchive", url: "https://github.com/ZipArchive/ZipArchive.git", "2.4.1"..<"2.4.2"),
+        .package(url: "https://github.com/cxa/MenuItemKit.git", from: "4.0.0"),
+        .package(url: "https://github.com/tadija/AEXML.git", from: "4.6.1"),
+        .package(url: "https://github.com/ArtSabintsev/FontBlaster.git", from: "5.2.0"),
+        .package(name: "Realm", url: "https://github.com/realm/realm-cocoa.git", from: "10.20.0"),
+        .package(url: "https://github.com/tsolomko/SWCompression.git", from: "4.7.0")
+    ],
+    targets: [
+        .target(
+            name: "FolioReaderKit",
+            dependencies: ["AEXML", "ZipArchive", "MenuItemKit","FontBlaster", .product(name: "RealmSwift", package: "Realm"), "SWCompression"],
+            resources: [ .process("Resources") ]),
+        
+    ]
 )
