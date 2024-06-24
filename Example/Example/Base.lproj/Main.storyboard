@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="16A319" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="vXZ-lx-hvc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="vXZ-lx-hvc">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
-        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -16,10 +16,11 @@
                         <viewControllerLayoutGuide type="bottom" id="2fi-mo-0CV"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="kh9-bI-dsS">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <button opaque="NO" tag="1" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4VN-zC-gTV">
+                            <button opaque="NO" tag="1" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4VN-zC-gTV">
+                                <rect key="frame" x="114" y="309" width="164.33333333333337" height="235"/>
                                 <color key="backgroundColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="235" id="4Do-x7-Zyi"/>
@@ -30,34 +31,15 @@
                                     <action selector="didOpen:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="Ibf-j6-YlH"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" tag="2" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vdn-HF-kCC">
-                                <color key="backgroundColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="vdn-HF-kCC" secondAttribute="height" multiplier="28:40" id="9fo-qU-rt1"/>
-                                </constraints>
-                                <connections>
-                                    <action selector="didOpen:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="M8S-eM-283"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="4VN-zC-gTV" firstAttribute="leading" secondItem="vdn-HF-kCC" secondAttribute="leading" id="O6h-O5-Mm3"/>
-                            <constraint firstItem="4VN-zC-gTV" firstAttribute="trailing" secondItem="vdn-HF-kCC" secondAttribute="trailing" id="WFt-MO-d3s"/>
-                            <constraint firstItem="vdn-HF-kCC" firstAttribute="centerX" secondItem="kh9-bI-dsS" secondAttribute="centerX" id="Yo1-zt-m3U"/>
-                            <constraint firstItem="4VN-zC-gTV" firstAttribute="leading" secondItem="vdn-HF-kCC" secondAttribute="trailing" constant="-185" id="ZQK-9H-WO5"/>
-                            <constraint firstItem="vdn-HF-kCC" firstAttribute="top" secondItem="4VN-zC-gTV" secondAttribute="bottom" constant="24" id="cmd-b3-LGv"/>
-                            <constraint firstItem="4VN-zC-gTV" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" constant="44" id="iMP-kv-hwb"/>
+                            <constraint firstItem="4VN-zC-gTV" firstAttribute="centerX" secondItem="kh9-bI-dsS" secondAttribute="centerX" id="avR-8J-2ut"/>
+                            <constraint firstItem="4VN-zC-gTV" firstAttribute="centerY" secondItem="kh9-bI-dsS" secondAttribute="centerY" id="p1E-LE-w0v"/>
                         </constraints>
-                        <variation key="default">
-                            <mask key="constraints">
-                                <exclude reference="ZQK-9H-WO5"/>
-                            </mask>
-                        </variation>
                     </view>
                     <connections>
                         <outlet property="bookOne" destination="4VN-zC-gTV" id="Yau-yI-OXs"/>
-                        <outlet property="bookTwo" destination="vdn-HF-kCC" id="XU5-jB-OaP"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>

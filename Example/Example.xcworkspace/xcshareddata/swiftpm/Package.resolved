@@ -1,0 +1,87 @@
+{
+  "originHash" : "095b9fc7731f9887802446ed705d03ab746766afc332f904b04eec5e0369124e",
+  "pins" : [
+    {
+      "identity" : "aexml",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tadija/AEXML.git",
+      "state" : {
+        "revision" : "db806756c989760b35108146381535aec231092b",
+        "version" : "4.7.0"
+      }
+    },
+    {
+      "identity" : "bitbytedata",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tsolomko/BitByteData",
+      "state" : {
+        "revision" : "cdcdc5177ad536cfb11b95c620f926a81014b7fe",
+        "version" : "2.0.4"
+      }
+    },
+    {
+      "identity" : "folioreaderkit-old",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/alexeyismirnov/FolioReaderKit-old.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "cb703a44d283bd386b441546e82a8a89dbe2cb6d"
+      }
+    },
+    {
+      "identity" : "fontblaster",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ArtSabintsev/FontBlaster.git",
+      "state" : {
+        "revision" : "09fffe9cf20293fce81ce7154b46f8e60291baa8",
+        "version" : "5.3.0"
+      }
+    },
+    {
+      "identity" : "menuitemkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cxa/MenuItemKit.git",
+      "state" : {
+        "revision" : "f9c40c444b0e2fc952cd3c8c6f4b0d30181dcb10",
+        "version" : "4.0.1"
+      }
+    },
+    {
+      "identity" : "realm-cocoa",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/realm/realm-cocoa.git",
+      "state" : {
+        "revision" : "fb903a9c901cb7863953fdcb5182b05ca2275b27",
+        "version" : "10.52.0"
+      }
+    },
+    {
+      "identity" : "realm-core",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/realm/realm-core.git",
+      "state" : {
+        "revision" : "058ecce712b4be8b2a2384ed893bf83d56a49fc0",
+        "version" : "14.10.1"
+      }
+    },
+    {
+      "identity" : "swcompression",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tsolomko/SWCompression.git",
+      "state" : {
+        "revision" : "390e0b0af8dd19a600005a242a89e570ff482e09",
+        "version" : "4.8.6"
+      }
+    },
+    {
+      "identity" : "ziparchive",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ZipArchive/ZipArchive.git",
+      "state" : {
+        "revision" : "23dc1a69b240420528de86a8720e85fb178b24da",
+        "version" : "2.4.1"
+      }
+    }
+  ],
+  "version" : 3
+}
