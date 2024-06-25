@@ -142,15 +142,18 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
         )
     }
 
+    /*
     func loadHTMLString(title: String!,htmlContent: String!, baseURL: URL!) {
         // Insert the stored highlights to the HTML
-        let tempHtmlContent = htmlContentWithInsertHighlights(htmlContent)
+        var tempHtmlContent = htmlContentWithInsertHighlights(htmlContent)
+        
         // Load the html into the webview
         webView?.alpha = 0
         webView?.loadHTMLString(tempHtmlContent, baseURL: baseURL)
+        
     }
+    */
     
-    /*
         func loadHTMLString(title: String!,htmlContent: String!, baseURL: URL!) {
             // Insert the stored highlights to the HTML
             let tempHtmlContent = htmlContentWithInsertHighlights(htmlContent)
@@ -174,8 +177,8 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
             }
 
             webView?.loadFileURL(URL(fileURLWithPath: filePath), allowingReadAccessTo:URL(fileURLWithPath: baseURL.path.deletingLastPathComponent))
-}
-*/
+    }
+
 
     // MARK: - Highlights
 

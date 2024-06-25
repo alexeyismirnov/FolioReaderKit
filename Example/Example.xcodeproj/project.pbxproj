@@ -47,6 +47,7 @@
 				3AAA8B9B1E9BB94B00A47E5A /* Shared */,
 				1A42C28B1C0E3882000F2137 /* Example */,
 				8ABB70652C29645100C9080E /* Example.app */,
+				8AEEF1D22C2A642800DAD9F4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -70,6 +71,13 @@
 				751F8CF51ECD20110050A2CF /* Epub.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		8AEEF1D22C2A642800DAD9F4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
