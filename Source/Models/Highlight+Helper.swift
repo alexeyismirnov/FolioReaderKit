@@ -193,6 +193,8 @@ extension Highlight {
         if let page = page {
             predicate = NSPredicate(format: "bookId = %@ && page = %@", bookId, page)
         }
+        
+        return []
 
         do {
             let realm = try Realm(configuration: readerConfig.realmConfiguration)
