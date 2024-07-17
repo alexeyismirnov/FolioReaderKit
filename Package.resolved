@@ -1,5 +1,4 @@
 {
-  "originHash" : "095b9fc7731f9887802446ed705d03ab746766afc332f904b04eec5e0369124e",
   "pins" : [
     {
       "identity" : "aexml",
@@ -17,15 +16,6 @@
       "state" : {
         "revision" : "cdcdc5177ad536cfb11b95c620f926a81014b7fe",
         "version" : "2.0.4"
-      }
-    },
-    {
-      "identity" : "folioreaderkit-old",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/alexeyismirnov/FolioReaderKit-old.git",
-      "state" : {
-        "branch" : "master",
-        "revision" : "cb703a44d283bd386b441546e82a8a89dbe2cb6d"
       }
     },
     {
@@ -51,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/realm/realm-cocoa.git",
       "state" : {
-        "revision" : "fb903a9c901cb7863953fdcb5182b05ca2275b27",
-        "version" : "10.52.0"
+        "revision" : "ae827eabf45ba64562c75b6e99038da6ce12d427",
+        "version" : "10.52.1"
       }
     },
     {
@@ -60,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/realm/realm-core.git",
       "state" : {
-        "revision" : "058ecce712b4be8b2a2384ed893bf83d56a49fc0",
-        "version" : "14.10.1"
+        "revision" : "f889f79a2301208fd9d322d07abfc883b8f2046c",
+        "version" : "14.10.2"
       }
     },
     {
@@ -83,5 +73,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }

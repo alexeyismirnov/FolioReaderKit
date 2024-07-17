@@ -142,7 +142,7 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
         )
     }
 
-    
+/*
     func loadHTMLString(title: String!,htmlContent: String!, baseURL: URL!) {
         // Insert the stored highlights to the HTML
         let tempHtmlContent = htmlContentWithInsertHighlights(htmlContent)
@@ -152,18 +152,39 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
         webView?.loadHTMLString(tempHtmlContent, baseURL: baseURL)
         
     }
+     */
 
-/*
+
         func loadHTMLString(title: String!,htmlContent: String!, baseURL: URL!) {
+                       
+            var bundle: Bundle
+
+            #if SWIFT_PACKAGE
+            bundle = Bundle.module
+            #else
+            bundle = Bundle(for: FolioReader.self)
+            #endif
+            let jsFileURL = bundle.url(forResource: "Bridge", withExtension: "js")
+            let cssFileURL = bundle.url(forResource: "Style", withExtension: "css")
+            
             // Insert the stored highlights to the HTML
             let tempHtmlContent = htmlContentWithInsertHighlights(htmlContent)
             // Load the html into the webview
             webView?.alpha = 0
-    //           webView?.loadHTMLString(tempHtmlContent, baseURL: baseURL)
             
             let tempPath = baseURL.path
-            let filePath = tempPath + "/" + title
+            let filePath = tempPath + "/tempHtmlContent.html"
             
+            let fileManager = FileManager.default
+            do {
+                try fileManager.copyItem(at: cssFileURL!, to: URL(fileURLWithPath: tempPath+"/Style.css"))
+                try fileManager.copyItem(at: jsFileURL!, to: URL(fileURLWithPath: tempPath+"/Bridge.js"))
+                
+            } catch let error  {
+               print(error.localizedDescription)
+            }
+            
+            /*
             if title.contains("xhtml") {
                 let htmlData = NSString(string: tempHtmlContent).data(using: String.Encoding.utf8.rawValue)
                 let options = [NSAttributedString.DocumentReadingOptionKey.documentType:
@@ -175,10 +196,12 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
             }else {
                 try! tempHtmlContent.write(toFile: filePath, atomically: true, encoding: String.Encoding.utf8)
             }
-
+*/
+            
+            try! tempHtmlContent.write(toFile: filePath, atomically: true, encoding: String.Encoding.utf8)
             webView?.loadFileURL(URL(fileURLWithPath: filePath), allowingReadAccessTo:URL(fileURLWithPath: baseURL.path.deletingLastPathComponent))
     }
-*/
+
 
     // MARK: - Highlights
 

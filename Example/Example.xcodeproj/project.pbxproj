@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,7 +13,6 @@
 		1A42C2A21C0E3A8D000F2137 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1A42C2A01C0E3A8D000F2137 /* LaunchScreen.storyboard */; };
 		3AAA8BA01E9BB94B00A47E5A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3AAA8B9C1E9BB94B00A47E5A /* Assets.xcassets */; };
 		751F8CF61ECD20110050A2CF /* Epub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751F8CF51ECD20110050A2CF /* Epub.swift */; };
-		8A5325642C296CD0008E1F66 /* FolioReaderKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8A5325632C296CD0008E1F66 /* FolioReaderKit */; };
 		8A5325682C2975EC008E1F66 /* prayerbookSimpl.epub in Resources */ = {isa = PBXBuildFile; fileRef = 8A5325672C2975EC008E1F66 /* prayerbookSimpl.epub */; };
 /* End PBXBuildFile section */
 
@@ -34,7 +33,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8A5325642C296CD0008E1F66 /* FolioReaderKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,7 +95,6 @@
 			);
 			name = Example;
 			packageProductDependencies = (
-				8A5325632C296CD0008E1F66 /* FolioReaderKit */,
 			);
 			productName = Example;
 			productReference = 8ABB70652C29645100C9080E /* Example.app */;
@@ -115,6 +112,7 @@
 				TargetAttributes = {
 					1A42C2881C0E3882000F2137 = {
 						CreatedOnToolsVersion = 7.1.1;
+						DevelopmentTeam = 3NQ697ND22;
 						LastSwiftMigration = "";
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -136,7 +134,6 @@
 			);
 			mainGroup = 1A42C2801C0E3882000F2137;
 			packageReferences = (
-				8A5325622C296CD0008E1F66 /* XCRemoteSwiftPackageReference "FolioReaderKit-old" */,
 			);
 			productRefGroup = 1A42C2801C0E3882000F2137;
 			projectDirPath = "";
@@ -293,8 +290,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -309,10 +305,7 @@
 				DEVELOPMENT_TEAM = 3NQ697ND22;
 				INFOPLIST_FILE = Example/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.folioreader.Example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -329,10 +322,7 @@
 				DEVELOPMENT_TEAM = 3NQ697ND22;
 				INFOPLIST_FILE = Example/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.folioreader.Example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -363,25 +353,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		8A5325622C296CD0008E1F66 /* XCRemoteSwiftPackageReference "FolioReaderKit-old" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/alexeyismirnov/FolioReaderKit-old.git";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		8A5325632C296CD0008E1F66 /* FolioReaderKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8A5325622C296CD0008E1F66 /* XCRemoteSwiftPackageReference "FolioReaderKit-old" */;
-			productName = FolioReaderKit;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1A42C2811C0E3882000F2137 /* Project object */;
 }

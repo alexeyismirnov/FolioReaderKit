@@ -268,13 +268,14 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
     }
 
     func configureNavBarButtons() {
+        let buttonTintColor = folioReader.isNight(UIColor.green, UIColor.blue)
 
         // Navbar buttons
-        let shareIcon = UIImage(readerImageNamed: "icon-navbar-share")?.ignoreSystemTint(withConfiguration: self.readerConfig)
-        let audioIcon = UIImage(readerImageNamed: "icon-navbar-tts")?.ignoreSystemTint(withConfiguration: self.readerConfig) //man-speech-icon
-        let closeIcon = UIImage(readerImageNamed: "icon-navbar-close")?.ignoreSystemTint(withConfiguration: self.readerConfig)
-        let tocIcon = UIImage(readerImageNamed: "icon-navbar-toc")?.ignoreSystemTint(withConfiguration: self.readerConfig)
-        let fontIcon = UIImage(readerImageNamed: "icon-navbar-font")?.ignoreSystemTint(withConfiguration: self.readerConfig)
+        let shareIcon = UIImage(readerImageNamed: "icon-navbar-share")?.imageTintColor(buttonTintColor)?.withRenderingMode(.alwaysOriginal)
+        let audioIcon = UIImage(readerImageNamed: "icon-navbar-tts")?.imageTintColor(buttonTintColor)?.withRenderingMode(.alwaysOriginal)
+        let closeIcon = UIImage(readerImageNamed: "icon-navbar-close")?.imageTintColor(buttonTintColor)?.withRenderingMode(.alwaysOriginal)
+        let tocIcon = UIImage(readerImageNamed: "icon-navbar-toc")?.imageTintColor(buttonTintColor)?.withRenderingMode(.alwaysOriginal)
+        let fontIcon = UIImage(readerImageNamed: "icon-navbar-font")?.imageTintColor(buttonTintColor)?.withRenderingMode(.alwaysOriginal)
         let space = 70 as CGFloat
 
         let menu = UIBarButtonItem(image: closeIcon, style: .plain, target: self, action:#selector(closeReader(_:)))
@@ -284,6 +285,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
         var rightBarIcons = [UIBarButtonItem]()
 
+        /*
         if (self.readerConfig.allowSharing == true) {
             rightBarIcons.append(UIBarButtonItem(image: shareIcon, style: .plain, target: self, action:#selector(shareChapter(_:))))
         }
@@ -291,7 +293,8 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         if self.book.hasAudio || self.readerConfig.enableTTS {
             rightBarIcons.append(UIBarButtonItem(image: audioIcon, style: .plain, target: self, action:#selector(presentPlayerMenu(_:))))
         }
-
+*/
+        
         let font = UIBarButtonItem(image: fontIcon, style: .plain, target: self, action: #selector(presentFontsMenu))
         font.width = space
 
@@ -488,8 +491,8 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         let jsFilePath = bundle.path(forResource: "Bridge", ofType: "js")
         let cssFilePath = bundle.path(forResource: "Style", ofType: "css")
         
-        let cssTag = "<link rel=\"stylesheet\" type=\"text/css\" href=\"\(cssFilePath!)\">"
-        let jsTag = "<script type=\"text/javascript\" src=\"\(jsFilePath!)\"></script>" +
+        let cssTag = "<link rel=\"stylesheet\" type=\"text/css\" href=\"Style.css\" />"
+        let jsTag = "<script type=\"text/javascript\" src=\"Bridge.js\"></script>" +
         "<script type=\"text/javascript\">setMediaOverlayStyleColors(\(mediaOverlayStyleColors))</script>"
         
         let metaTag = "<meta name='viewport' content='width=device-width,height=\(webHeight),initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'/>"
@@ -510,7 +513,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         // Font Size
         classes += " \(folioReader.currentFontSize.cssIdentifier)"
 
-        html = html.replacingOccurrences(of: "<html ", with: "<html class=\"\(classes)\"")
+        html = html.replacingOccurrences(of: "<html ", with: "<html class=\"\(classes)\" ")
 
         // Let the delegate adjust the html string
         if let modifiedHtmlContent = self.delegate?.htmlContentForPage?(cell, htmlContent: html) {
