@@ -88,6 +88,7 @@ class ScrollScrubber: NSObject, UIScrollViewDelegate {
         slider.layer.anchorPoint = CGPoint(x: 0, y: 0)
         slider.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi / 2))
         slider.alpha = 0
+        slider.isUserInteractionEnabled = false
         self.reloadColors()
 
         // less obtrusive knob and fixes jump: http://stackoverflow.com/a/22301039/484780
@@ -133,6 +134,7 @@ class ScrollScrubber: NSObject, UIScrollViewDelegate {
 
         visible = true
 
+        slider.isUserInteractionEnabled = true
         if slider.alpha <= 0 {
             UIView.animate(withDuration: showSpeed, animations: {
 
@@ -155,6 +157,11 @@ class ScrollScrubber: NSObject, UIScrollViewDelegate {
         resetScrollDelta()
         UIView.animate(withDuration: hideSpeed, animations: {
             self.slider.alpha = 0
+        }, completion: { _ in
+            // Alpha < 0.01 already skips hit-testing; also disable to be safe on wide Duo layouts.
+            if self.slider.alpha < 0.01 {
+                self.slider.isUserInteractionEnabled = false
+            }
         })
     }
 

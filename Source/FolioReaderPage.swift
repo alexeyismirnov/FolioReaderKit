@@ -81,11 +81,18 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
         if webView == nil {
             webView = FolioReaderWebView(frame: webViewFrame(), readerContainer: readerContainer)
             webView?.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            webView?.scrollView.showsVerticalScrollIndicator = false
+            webView?.scrollView.showsVerticalScrollIndicator = true
             webView?.scrollView.showsHorizontalScrollIndicator = false
             webView?.backgroundColor = .clear
-            webView?.scrollView.decelerationRate = UIScrollView.DecelerationRate.normal;
-
+            webView?.scrollView.decelerationRate = UIScrollView.DecelerationRate.normal
+            webView?.scrollView.isScrollEnabled = true
+            webView?.scrollView.alwaysBounceVertical = true
+            webView?.scrollView.bounces = true
+            webView?.scrollView.delaysContentTouches = false
+            webView?.scrollView.canCancelContentTouches = true
+            if #available(iOS 11.0, *) {
+                webView?.scrollView.contentInsetAdjustmentBehavior = .never
+            }
 
             self.contentView.addSubview(webView!)
         }
@@ -96,13 +103,15 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
             webView?.scrollView.addSubview(colorView)
         }
 
-        // Remove all gestures before adding new one
-        webView?.gestureRecognizers?.forEach({ gesture in
-            webView?.removeGestureRecognizer(gesture)
-        })
+        // Only replace our tap recognizer — do not strip WKWebView system gestures
+        // (removing them breaks scrolling on newer iOS / iPhone Duo).
+        webView?.gestureRecognizers?
+            .compactMap { $0 as? UITapGestureRecognizer }
+            .forEach { webView?.removeGestureRecognizer($0) }
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
         tapGestureRecognizer.numberOfTapsRequired = 1
         tapGestureRecognizer.delegate = self
+        tapGestureRecognizer.cancelsTouchesInView = false
         webView?.addGestureRecognizer(tapGestureRecognizer)
     }
 
@@ -142,49 +151,28 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
         )
     }
 
-/*
+    /*
     func loadHTMLString(title: String!,htmlContent: String!, baseURL: URL!) {
         // Insert the stored highlights to the HTML
-        let tempHtmlContent = htmlContentWithInsertHighlights(htmlContent)
+        var tempHtmlContent = htmlContentWithInsertHighlights(htmlContent)
         
         // Load the html into the webview
         webView?.alpha = 0
         webView?.loadHTMLString(tempHtmlContent, baseURL: baseURL)
         
     }
-     */
-
-
+    */
+    
         func loadHTMLString(title: String!,htmlContent: String!, baseURL: URL!) {
-                       
-            var bundle: Bundle
-
-            #if SWIFT_PACKAGE
-            bundle = Bundle.module
-            #else
-            bundle = Bundle(for: FolioReader.self)
-            #endif
-            let jsFileURL = bundle.url(forResource: "Bridge", withExtension: "js")
-            let cssFileURL = bundle.url(forResource: "Style", withExtension: "css")
-            
             // Insert the stored highlights to the HTML
             let tempHtmlContent = htmlContentWithInsertHighlights(htmlContent)
             // Load the html into the webview
             webView?.alpha = 0
+    //           webView?.loadHTMLString(tempHtmlContent, baseURL: baseURL)
             
             let tempPath = baseURL.path
-            let filePath = tempPath + "/tempHtmlContent.html"
+            let filePath = tempPath + "/" + title
             
-            let fileManager = FileManager.default
-            do {
-                try fileManager.copyItem(at: cssFileURL!, to: URL(fileURLWithPath: tempPath+"/Style.css"))
-                try fileManager.copyItem(at: jsFileURL!, to: URL(fileURLWithPath: tempPath+"/Bridge.js"))
-                
-            } catch let error  {
-               print(error.localizedDescription)
-            }
-            
-            /*
             if title.contains("xhtml") {
                 let htmlData = NSString(string: tempHtmlContent).data(using: String.Encoding.utf8.rawValue)
                 let options = [NSAttributedString.DocumentReadingOptionKey.documentType:
@@ -196,9 +184,7 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
             }else {
                 try! tempHtmlContent.write(toFile: filePath, atomically: true, encoding: String.Encoding.utf8)
             }
-*/
-            
-            try! tempHtmlContent.write(toFile: filePath, atomically: true, encoding: String.Encoding.utf8)
+
             webView?.loadFileURL(URL(fileURLWithPath: filePath), allowingReadAccessTo:URL(fileURLWithPath: baseURL.path.deletingLastPathComponent))
     }
 
@@ -272,6 +258,21 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
                self.folioReader.readerCenter?.isScrolling == true &&
                self.readerConfig.scrollDirection != .horizontalWithVerticalContent) {
                scrollPageToBottom()
+           }
+
+           webView.setupScrollDirection()
+           webView.scrollView.isScrollEnabled = true
+           webView.scrollView.alwaysBounceVertical = true
+           webView.scrollView.bounces = true
+           // Style.css uses overflow:hidden (for horizontal paging). Unlock for vertical reading.
+           if self.readerConfig.scrollDirection != .horizontal {
+               let unlock = """
+               document.documentElement.style.setProperty('overflow','visible','important');
+               document.body.style.setProperty('overflow','visible','important');
+               document.documentElement.style.setProperty('height','auto','important');
+               document.body.style.setProperty('height','auto','important');
+               """
+               webView.evaluateJavaScript(unlock, completionHandler: nil)
            }
 
            UIView.animate(withDuration: 0.2, animations: {webView.alpha = 1}, completion: { finished in

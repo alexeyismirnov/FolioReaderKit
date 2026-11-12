@@ -143,7 +143,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
         screenBounds = self.getScreenBounds()
         
-        setPageSize(UIApplication.shared.statusBarOrientation)
+        setPageSize()
 
         // Layout
         collectionViewLayout.sectionInset = UIEdgeInsets.zero
@@ -159,12 +159,17 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.isPagingEnabled = true
+        // Vertical reading: no chapter paging — webview owns vertical pans (Duo).
+        // Horizontal reading keeps paging between spine items.
+        let isHorizontal = (readerConfig.scrollDirection == .horizontal)
+        collectionView.isPagingEnabled = isHorizontal
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.backgroundColor = background
         collectionView.decelerationRate = UIScrollView.DecelerationRate.fast
-        enableScrollBetweenChapters(scrollEnabled: true)
+        collectionView.delaysContentTouches = false
+        collectionView.canCancelContentTouches = false
+        enableScrollBetweenChapters(scrollEnabled: isHorizontal)
         view.addSubview(collectionView)
         
         if #available(iOS 11.0, *) {
@@ -224,8 +229,43 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         screenBounds = self.getScreenBounds()
         loadingView.center = view.center
 
-        setPageSize(UIApplication.shared.statusBarOrientation)
+        let previousWidth = pageWidth
+        let previousHeight = pageHeight
+        setPageSize()
+        // Keep collectionView filling the reader view (autoresizingMask handles most cases).
+        if collectionView.frame.size != view.bounds.size {
+            collectionView.frame = view.bounds
+        }
         updateSubviewFrames()
+
+        // Only treat this as a structural resize when not mid-gesture; continuous
+        // invalidate/setContentOffset during scroll freezes reading on Duo.
+        if folioReader.isReaderReady,
+           isScrolling == false,
+           previousWidth > 0, previousHeight > 0,
+           (abs(previousWidth - pageWidth) > 1.0 || abs(previousHeight - pageHeight) > 1.0) {
+            relayoutPagesForSizeChange(resetOffset: true)
+        }
+    }
+
+    override open func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        guard folioReader.isReaderReady else { return }
+
+        coordinator.animate(alongsideTransition: { [weak self] _ in
+            guard let self = self else { return }
+            self.screenBounds = self.getScreenBounds()
+            self.setPageSize()
+            self.collectionView.frame = self.view.bounds
+            self.relayoutPagesForSizeChange(resetOffset: true)
+            self.updateSubviewFrames()
+        }, completion: { [weak self] _ in
+            guard let self = self, let currentPage = self.currentPage else { return }
+            self.pagesForCurrentPage(currentPage)
+            currentPage.refreshPageMode()
+            currentPage.webView?.scrollView.isScrollEnabled = true
+            currentPage.webView?.setupScrollDirection()
+        })
     }
 
     // MARK: Layout
@@ -256,7 +296,10 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
     fileprivate func frameForScrollScrubber() -> CGRect {
         let scrubberY: CGFloat = ((self.readerConfig.shouldHideNavigationOnTap == true || self.readerConfig.hideBars == true) ? 50 : 74)
-        return CGRect(x: self.pageWidth + 10, y: scrubberY, width: 40, height: (self.pageHeight - 100))
+        // Keep the vertical scrubber on the trailing edge inside the view.
+        // `pageWidth + 10` + 90° transform previously covered most of a wide Duo canvas.
+        let scrubberX = max(0, self.pageWidth - 45)
+        return CGRect(x: scrubberX, y: scrubberY, width: 40, height: max(0, self.pageHeight - 100))
     }
 
     func configureNavBar() {
@@ -268,14 +311,13 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
     }
 
     func configureNavBarButtons() {
-        let buttonTintColor = folioReader.isNight(UIColor.green, UIColor.blue)
 
         // Navbar buttons
-        let shareIcon = UIImage(readerImageNamed: "icon-navbar-share")?.imageTintColor(buttonTintColor)?.withRenderingMode(.alwaysOriginal)
-        let audioIcon = UIImage(readerImageNamed: "icon-navbar-tts")?.imageTintColor(buttonTintColor)?.withRenderingMode(.alwaysOriginal)
-        let closeIcon = UIImage(readerImageNamed: "icon-navbar-close")?.imageTintColor(buttonTintColor)?.withRenderingMode(.alwaysOriginal)
-        let tocIcon = UIImage(readerImageNamed: "icon-navbar-toc")?.imageTintColor(buttonTintColor)?.withRenderingMode(.alwaysOriginal)
-        let fontIcon = UIImage(readerImageNamed: "icon-navbar-font")?.imageTintColor(buttonTintColor)?.withRenderingMode(.alwaysOriginal)
+        let shareIcon = UIImage(readerImageNamed: "icon-navbar-share")?.ignoreSystemTint(withConfiguration: self.readerConfig)
+        let audioIcon = UIImage(readerImageNamed: "icon-navbar-tts")?.ignoreSystemTint(withConfiguration: self.readerConfig) //man-speech-icon
+        let closeIcon = UIImage(readerImageNamed: "icon-navbar-close")?.ignoreSystemTint(withConfiguration: self.readerConfig)
+        let tocIcon = UIImage(readerImageNamed: "icon-navbar-toc")?.ignoreSystemTint(withConfiguration: self.readerConfig)
+        let fontIcon = UIImage(readerImageNamed: "icon-navbar-font")?.ignoreSystemTint(withConfiguration: self.readerConfig)
         let space = 70 as CGFloat
 
         let menu = UIBarButtonItem(image: closeIcon, style: .plain, target: self, action:#selector(closeReader(_:)))
@@ -285,7 +327,6 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
         var rightBarIcons = [UIBarButtonItem]()
 
-        /*
         if (self.readerConfig.allowSharing == true) {
             rightBarIcons.append(UIBarButtonItem(image: shareIcon, style: .plain, target: self, action:#selector(shareChapter(_:))))
         }
@@ -293,8 +334,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         if self.book.hasAudio || self.readerConfig.enableTTS {
             rightBarIcons.append(UIBarButtonItem(image: audioIcon, style: .plain, target: self, action:#selector(presentPlayerMenu(_:))))
         }
-*/
-        
+
         let font = UIBarButtonItem(image: fontIcon, style: .plain, target: self, action: #selector(presentFontsMenu))
         font.width = space
 
@@ -369,6 +409,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         // Change layout
         self.readerConfig.scrollDirection = direction
         self.collectionViewLayout.scrollDirection = .direction(withConfiguration: self.readerConfig)
+        enableScrollBetweenChapters(scrollEnabled: direction == .horizontal)
         self.currentPage?.setNeedsLayout()
         self.collectionView.collectionViewLayout.invalidateLayout()
         self.collectionView.setContentOffset(frameForPage(self.currentPageNumber).origin, animated: false)
@@ -467,6 +508,8 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         }
         cell.webView?.setupScrollDirection()
         cell.webView?.frame = cell.webViewFrame()
+        cell.webView?.scrollView.isScrollEnabled = true
+        cell.webView?.scrollView.alwaysBounceVertical = true
         cell.delegate = self
         cell.backgroundColor = .clear
         setPageProgressiveDirection(cell)
@@ -479,8 +522,8 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
         let mediaOverlayStyleColors = "\"\(self.readerConfig.mediaOverlayColor.hexString(false))\", \"\(self.readerConfig.mediaOverlayColor.highlightColor().hexString(false))\""
 
-        let webHeight = UIScreen.main.bounds.height
-        // Inject CSS
+        // Inject CSS. Do not pin viewport height — a fixed height clipped content on
+        // iPhone Duo's larger canvas and made vertical scrolling feel stuck.
         var bundle: Bundle
         
         #if SWIFT_PACKAGE
@@ -491,11 +534,11 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         let jsFilePath = bundle.path(forResource: "Bridge", ofType: "js")
         let cssFilePath = bundle.path(forResource: "Style", ofType: "css")
         
-        let cssTag = "<link rel=\"stylesheet\" type=\"text/css\" href=\"Style.css\" />"
-        let jsTag = "<script type=\"text/javascript\" src=\"Bridge.js\"></script>" +
+        let cssTag = "<link rel=\"stylesheet\" type=\"text/css\" href=\"\(cssFilePath!)\">"
+        let jsTag = "<script type=\"text/javascript\" src=\"\(jsFilePath!)\"></script>" +
         "<script type=\"text/javascript\">setMediaOverlayStyleColors(\(mediaOverlayStyleColors))</script>"
         
-        let metaTag = "<meta name='viewport' content='width=device-width,height=\(webHeight),initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'/>"
+        let metaTag = "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover'/>"
         
         let toInject = "\n\(metaTag)\n\(cssTag)\n\(jsTag)\n</head>"
 
@@ -513,7 +556,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         // Font Size
         classes += " \(folioReader.currentFontSize.cssIdentifier)"
 
-        html = html.replacingOccurrences(of: "<html ", with: "<html class=\"\(classes)\" ")
+        html = html.replacingOccurrences(of: "<html ", with: "<html class=\"\(classes)\"")
 
         // Let the delegate adjust the html string
         if let modifiedHtmlContent = self.delegate?.htmlContentForPage?(cell, htmlContent: html) {
@@ -527,13 +570,10 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         var size = CGSize(width: collectionView.frame.width, height: collectionView.frame.height)
         
-        if #available(iOS 11.0, *) {
-            let orientation = UIDevice.current.orientation
-            
-            if orientation == .portrait || orientation == .portraitUpsideDown {
-                if readerConfig.scrollDirection == .horizontal {
-                    size.height = size.height - view.safeAreaInsets.bottom
-                }
+        // Prefer available space over device orientation (required for iPhone Duo).
+        if #available(iOS 11.0, *), collectionView.frame.height >= collectionView.frame.width {
+            if readerConfig.scrollDirection == .horizontal {
+                size.height = size.height - view.safeAreaInsets.bottom
             }
         }
         
@@ -548,10 +588,11 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         clearRecentlyScrolled()
         recentlyScrolled = true
         pointNow = scrollView.contentOffset
-        
-        if (scrollView is UICollectionView) {
-            scrollView.isUserInteractionEnabled = false
-        }
+
+        // NOTE: Do NOT set collectionView.isUserInteractionEnabled = false here.
+        // That disables every chapter webview too; if the gesture ends without
+        // deceleration, didEndDecelerating never runs and scrolling stays dead
+        // (especially common on iPhone Duo's wide canvas).
 
         if let currentPage = currentPage {
             currentPage.webView?.createMenu(options: true)
@@ -567,7 +608,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
             self.toggleBars()
         }
 
-        currentPage?.webView?.setNeedsLayout()
+        // Avoid setNeedsLayout on every scroll tick — it fights the scroll gesture on Duo.
         
         scrollScrubber?.scrollViewDidScroll(scrollView)
 
@@ -626,10 +667,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
     open func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         self.isScrolling = false
-        
-        if (scrollView is UICollectionView) {
-            scrollView.isUserInteractionEnabled = true
-        }
+        collectionView.isUserInteractionEnabled = true
 
         // Perform the page after a short delay as the collection view hasn't completed it's transition if this method is called (the index paths aren't right during fast scrolls).
         delay(0.2, closure: { [weak self] in
@@ -655,6 +693,11 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
     }
 
     open func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate {
+            // didEndDecelerating is skipped when there is no deceleration — restore UI now.
+            isScrolling = false
+            collectionView.isUserInteractionEnabled = true
+        }
         recentlyScrolledTimer = Timer(timeInterval:recentlyScrolledDelay, target: self, selector: #selector(FolioReaderCenter.clearRecentlyScrolled), userInfo: nil, repeats: false)
         RunLoop.current.add(recentlyScrolledTimer, forMode: RunLoop.Mode.common)
     }
@@ -672,50 +715,21 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
     }
 
     
-    // MARK: - Device rotation
+    // MARK: - Device rotation / size changes
 
     override open func willRotate(to toInterfaceOrientation: UIInterfaceOrientation, duration: TimeInterval) {
         guard folioReader.isReaderReady else { return }
 
-        setPageSize(toInterfaceOrientation)
+        let wasPortrait = pageWidth < pageHeight
+        screenBounds = getScreenBounds()
+        setPageSize()
         updateCurrentPage()
 
-        if self.currentOrientation == nil || (self.currentOrientation?.isPortrait != toInterfaceOrientation.isPortrait) {
-            var pageIndicatorFrame = pageIndicatorView?.frame
-            pageIndicatorFrame?.origin.y = ((screenBounds.size.height < screenBounds.size.width) ? (self.collectionView.frame.height - pageIndicatorHeight) : (self.collectionView.frame.width - pageIndicatorHeight))
-            pageIndicatorFrame?.origin.x = 0
-            pageIndicatorFrame?.size.width = ((screenBounds.size.height < screenBounds.size.width) ? (self.collectionView.frame.width) : (self.collectionView.frame.height))
-            pageIndicatorFrame?.size.height = pageIndicatorHeight
-
-            var scrollScrubberFrame = scrollScrubber?.slider.frame;
-            scrollScrubberFrame?.origin.x = ((screenBounds.size.height < screenBounds.size.width) ? (screenBounds.size.width - 100) : (screenBounds.size.height + 10))
-            scrollScrubberFrame?.size.height = ((screenBounds.size.height < screenBounds.size.width) ? (self.collectionView.frame.height - 100) : (self.collectionView.frame.width - 100))
-
-            self.collectionView.collectionViewLayout.invalidateLayout()
-
+        let isPortrait = pageWidth < pageHeight
+        if currentOrientation == nil || wasPortrait != isPortrait {
             UIView.animate(withDuration: duration, animations: {
-                // Adjust page indicator view
-                if let pageIndicatorFrame = pageIndicatorFrame {
-                    self.pageIndicatorView?.frame = pageIndicatorFrame
-                    self.pageIndicatorView?.reloadView(updateShadow: true)
-                }
-
-                // Adjust scroll scrubber slider
-                if let scrollScrubberFrame = scrollScrubberFrame {
-                    self.scrollScrubber?.slider.frame = scrollScrubberFrame
-                }
-
-                // Adjust collectionView
-                self.collectionView.contentSize = self.readerConfig.isDirection(
-                    CGSize(width: self.pageWidth, height: self.pageHeight * CGFloat(self.totalPages)),
-                    CGSize(width: self.pageWidth * CGFloat(self.totalPages), height: self.pageHeight),
-                    CGSize(width: self.pageWidth * CGFloat(self.totalPages), height: self.pageHeight)
-                )
-                self.collectionView.setContentOffset(self.frameForPage(self.currentPageNumber).origin, animated: false)
-                self.collectionView.collectionViewLayout.invalidateLayout()
-
-                // Adjust internal page offset
-                self.updatePageOffsetRate()
+                self.relayoutPagesForSizeChange(resetOffset: true)
+                self.updateSubviewFrames()
             })
         }
 
@@ -759,27 +773,38 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         }
     }
 
+    /// Relayout collection pages after fold/unfold or rotation using current view bounds.
+    fileprivate func relayoutPagesForSizeChange(resetOffset: Bool) {
+        pageIndicatorView?.frame = frameForPageIndicatorView()
+        pageIndicatorView?.reloadView(updateShadow: true)
+        scrollScrubber?.slider.frame = frameForScrollScrubber()
+
+        collectionView.collectionViewLayout.invalidateLayout()
+        collectionView.layoutIfNeeded()
+
+        collectionView.contentSize = readerConfig.isDirection(
+            CGSize(width: pageWidth, height: pageHeight * CGFloat(totalPages)),
+            CGSize(width: pageWidth * CGFloat(totalPages), height: pageHeight),
+            CGSize(width: pageWidth * CGFloat(totalPages), height: pageHeight)
+        )
+        if resetOffset, currentPageNumber > 0 {
+            collectionView.setContentOffset(frameForPage(currentPageNumber).origin, animated: false)
+        }
+        updatePageOffsetRate()
+
+        // Ensure chapter webviews can scroll after a canvas resize (iPhone Duo).
+        currentPage?.webView?.scrollView.isScrollEnabled = true
+        currentPage?.webView?.setupScrollDirection()
+        currentPage?.webView?.frame = currentPage?.webViewFrame() ?? .zero
+    }
+
     // MARK: - Page
 
-    func setPageSize(_ orientation: UIInterfaceOrientation) {
-        guard orientation.isPortrait else {
-            if screenBounds.size.width > screenBounds.size.height {
-                self.pageWidth = screenBounds.size.width
-                self.pageHeight = screenBounds.size.height
-            } else {
-                self.pageWidth = screenBounds.size.height
-                self.pageHeight = screenBounds.size.width
-            }
-            return
-        }
-
-        if screenBounds.size.width < screenBounds.size.height {
-            self.pageWidth = screenBounds.size.width
-            self.pageHeight = screenBounds.size.height
-        } else {
-            self.pageWidth = screenBounds.size.height
-            self.pageHeight = screenBounds.size.width
-        }
+    /// Size pages from the reader view bounds — never from UIScreen.main or device orientation.
+    func setPageSize() {
+        let size = (screenBounds ?? view.bounds).size
+        pageWidth = size.width
+        pageHeight = size.height
     }
 
     func updateCurrentPage(_ page: FolioReaderPage? = nil, completion: (() -> Void)? = nil) {
@@ -1534,10 +1559,11 @@ extension FolioReaderCenter: FolioReaderChapterListDelegate {
     }
     
     func getScreenBounds() -> CGRect {
-        var bounds = view.frame
+        // Subview layout must use bounds (view-local), not frame (superview coords).
+        var bounds = view.bounds
         
         if #available(iOS 11.0, *) {
-            bounds.size.height = bounds.size.height - view.safeAreaInsets.bottom
+            bounds.size.height = max(0, bounds.size.height - view.safeAreaInsets.bottom)
         }
         
         return bounds
