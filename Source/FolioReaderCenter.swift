@@ -223,6 +223,16 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         pageIndicatorView?.reloadView(updateShadow: true)
     }
 
+    override open func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        guard folioReader.isReaderReady else { return }
+        // Duo control strip / fold can change trailing inset — reflow the webview.
+        currentPage?.setNeedsLayout()
+        currentPage?.layoutIfNeeded()
+        updateSubviewFrames()
+        syncVerticalChapterPaging(for: currentPage)
+    }
+
     override open func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
@@ -360,9 +370,9 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
     fileprivate func frameForScrollScrubber() -> CGRect {
         let scrubberY: CGFloat = ((self.readerConfig.shouldHideNavigationOnTap == true || self.readerConfig.hideBars == true) ? 50 : 74)
-        // Keep the vertical scrubber on the trailing edge inside the view.
-        // `pageWidth + 10` + 90° transform previously covered most of a wide Duo canvas.
-        let scrubberX = max(0, self.pageWidth - 45)
+        // Keep the scrubber inside the reading column, clear of Duo's side controls.
+        let trailing = view.safeAreaInsets.right
+        let scrubberX = max(0, self.pageWidth - trailing - 45)
         return CGRect(x: scrubberX, y: scrubberY, width: 40, height: max(0, self.pageHeight - 100))
     }
 

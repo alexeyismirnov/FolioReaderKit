@@ -133,8 +133,14 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
     }
 
     func webViewFrame() -> CGRect {
+        // Keep reading text clear of Duo's vertical control strip (and any other
+        // horizontal safe-area chrome). Prefer the reader VC insets — collection
+        // cells often report zero safeAreaInsets.
+        let safe = folioReader.readerCenter?.view.safeAreaInsets ?? .zero
+        let horizontalSafe = UIEdgeInsets(top: 0, left: safe.left, bottom: 0, right: safe.right)
+
         guard (self.readerConfig.hideBars == false) else {
-            return bounds
+            return bounds.inset(by: horizontalSafe)
         }
 
         let statusbarHeight = UIApplication.shared.statusBarFrame.size.height
@@ -143,12 +149,13 @@ open class FolioReaderPage: UICollectionViewCell, WKNavigationDelegate, UIGestur
         let paddingTop: CGFloat = 20
         let paddingBottom: CGFloat = 30
 
-        return CGRect(
+        let frame = CGRect(
             x: bounds.origin.x,
             y: self.readerConfig.isDirection(bounds.origin.y + navTotal, bounds.origin.y + navTotal + paddingTop, bounds.origin.y + navTotal),
             width: bounds.width,
             height: self.readerConfig.isDirection(bounds.height - navTotal, bounds.height - navTotal - paddingTop - paddingBottom, bounds.height - navTotal)
         )
+        return frame.inset(by: horizontalSafe)
     }
 
     /*
