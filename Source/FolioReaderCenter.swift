@@ -159,8 +159,8 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         collectionView.delegate = self
         collectionView.dataSource = self
-        // Vertical reading: no chapter paging — webview owns vertical pans (Duo).
-        // Horizontal reading keeps paging between spine items.
+        // Horizontal: chapter paging on. Vertical: starts off; syncVerticalChapterPaging
+        // enables it only for short pages (covers) so long chapters keep Duo-safe pans.
         let isHorizontal = (readerConfig.scrollDirection == .horizontal)
         collectionView.isPagingEnabled = isHorizontal
         collectionView.showsVerticalScrollIndicator = false
@@ -265,6 +265,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
             currentPage.refreshPageMode()
             currentPage.webView?.scrollView.isScrollEnabled = true
             currentPage.webView?.setupScrollDirection()
+            self.syncVerticalChapterPaging(for: currentPage)
         })
     }
 
@@ -277,6 +278,69 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
      */
     open func enableScrollBetweenChapters(scrollEnabled: Bool) {
         self.collectionView.isScrollEnabled = scrollEnabled
+    }
+
+    private var isVerticalReading: Bool {
+        switch readerConfig.scrollDirection {
+        case .vertical, .defaultVertical:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Cover / image-only spine items fit the viewport; long chapters need webview-owned pans.
+    fileprivate func isShortVerticalPage(_ scrollView: UIScrollView) -> Bool {
+        let epsilon: CGFloat = 2.0
+        return scrollView.contentSize.height <= scrollView.bounds.height + epsilon
+    }
+
+    /**
+     Vertical: enable collection paging only for short pages (covers) so a swipe advances.
+     Long chapters keep collection scroll off (Duo) and use edge-flick for chapter change.
+     Horizontal modes keep chapter paging on.
+     */
+    fileprivate func syncVerticalChapterPaging(for page: FolioReaderPage? = nil) {
+        let page = page ?? currentPage
+        let webView = page?.webView
+
+        switch readerConfig.scrollDirection {
+        case .horizontal:
+            collectionView.isPagingEnabled = true
+            enableScrollBetweenChapters(scrollEnabled: true)
+            if let scrollView = webView?.scrollView {
+                scrollView.alwaysBounceVertical = false
+                scrollView.bounces = false
+            }
+            webView?.setupScrollDirection()
+
+        case .horizontalWithVerticalContent:
+            collectionView.isPagingEnabled = true
+            enableScrollBetweenChapters(scrollEnabled: true)
+            if let scrollView = webView?.scrollView {
+                scrollView.alwaysBounceVertical = true
+                scrollView.bounces = true
+            }
+            webView?.setupScrollDirection()
+
+        case .vertical, .defaultVertical:
+            guard let scrollView = webView?.scrollView else {
+                collectionView.isPagingEnabled = false
+                enableScrollBetweenChapters(scrollEnabled: false)
+                return
+            }
+            let short = isShortVerticalPage(scrollView)
+            // Short page: collection owns the vertical swipe (cover → next chapter).
+            // Long page: webview owns pans; chapter change via edge flick.
+            collectionView.isPagingEnabled = short
+            enableScrollBetweenChapters(scrollEnabled: short)
+            scrollView.isScrollEnabled = true
+            webView?.setupScrollDirection()
+            // setupScrollDirection enables bounce for vertical; short pages must not
+            // bounce or the webview eats the pan meant for collection paging.
+            scrollView.alwaysBounceVertical = !short
+            scrollView.bounces = !short
+        }
     }
 
     fileprivate func updateSubviewFrames() {
@@ -409,7 +473,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         // Change layout
         self.readerConfig.scrollDirection = direction
         self.collectionViewLayout.scrollDirection = .direction(withConfiguration: self.readerConfig)
-        enableScrollBetweenChapters(scrollEnabled: direction == .horizontal)
+        self.syncVerticalChapterPaging(for: currentPage)
         self.currentPage?.setNeedsLayout()
         self.collectionView.collectionViewLayout.invalidateLayout()
         self.collectionView.setContentOffset(frameForPage(self.currentPageNumber).origin, animated: false)
@@ -434,6 +498,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
             let pageOffsetPoint = self.readerConfig.isDirection(CGPoint(x: 0, y: pageOffset), CGPoint(x: pageOffset, y: 0), CGPoint(x: 0, y: pageOffset))
             pageScrollView.setContentOffset(pageOffsetPoint, animated: true)
+            self.syncVerticalChapterPaging(for: currentPage)
         }
     }
 
@@ -702,6 +767,26 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         RunLoop.current.add(recentlyScrolledTimer, forMode: RunLoop.Mode.common)
     }
 
+    open func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        // Short vertical pages use collection paging; only long chapters need edge-flick.
+        guard !(scrollView is UICollectionView),
+              isVerticalReading,
+              !isShortVerticalPage(scrollView) else {
+            return
+        }
+
+        let maxY = max(0, scrollView.contentSize.height - scrollView.bounds.height)
+        let y = scrollView.contentOffset.y
+        let edgeSlop: CGFloat = 8
+        let minVelocity: CGFloat = 0.4
+
+        if velocity.y > minVelocity && y >= maxY - edgeSlop {
+            changePageToNext()
+        } else if velocity.y < -minVelocity && y <= edgeSlop {
+            changePageToPrevious()
+        }
+    }
+
     @objc func clearRecentlyScrolled() {
         if(recentlyScrolledTimer != nil) {
             recentlyScrolledTimer.invalidate()
@@ -796,6 +881,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         currentPage?.webView?.scrollView.isScrollEnabled = true
         currentPage?.webView?.setupScrollDirection()
         currentPage?.webView?.frame = currentPage?.webViewFrame() ?? .zero
+        syncVerticalChapterPaging(for: currentPage)
     }
 
     // MARK: - Page
@@ -829,6 +915,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         }
 
         scrollScrubber?.setSliderVal()
+        syncVerticalChapterPaging(for: currentPage)
 
         currentPage.webView?.js("getReadingTime()", completionHandler: { (result) in
             if let readingTime = result {
@@ -837,6 +924,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
                 self.pageIndicatorView?.totalMinutes = 0
             }
             self.pagesForCurrentPage(currentPage)
+            self.syncVerticalChapterPaging(for: currentPage)
 
             self.delegate?.pageDidAppear?(currentPage)
             self.delegate?.pageItemChanged?(self.getCurrentPageItemNumber())
@@ -1510,6 +1598,15 @@ extension FolioReaderCenter: FolioReaderPageDelegate {
         if (readerConfig.scrollDirection == .horizontalWithVerticalContent),
             let offsetPoint = self.currentWebViewScrollPositions[page.pageNumber - 1] {
             page.webView?.scrollView.setContentOffset(offsetPoint, animated: false)
+        }
+
+        // Cover images may finish layout after didFinish — recheck short vs long page.
+        syncVerticalChapterPaging(for: page)
+        delay(0.35) { [weak self] in
+            self?.syncVerticalChapterPaging(for: page)
+        }
+        delay(1.0) { [weak self] in
+            self?.syncVerticalChapterPaging(for: page)
         }
         
         // Pass the event to the centers `pageDelegate`
