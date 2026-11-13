@@ -130,25 +130,12 @@ class ScrollScrubber: NSObject, UIScrollViewDelegate {
     // MARK: - show / hide
 
     func show() {
-        cancelHide()
-
-        visible = true
-
-        slider.isUserInteractionEnabled = true
-        if slider.alpha <= 0 {
-            UIView.animate(withDuration: showSpeed, animations: {
-
-                self.slider.alpha = 1
-
-            }, completion: { (Bool) -> Void in
-                self.hideAfterDelay()
-            })
-        } else {
-            slider.alpha = 1
-            if usingSlider == false {
-                hideAfterDelay()
-            }
-        }
+        // The rotated UISlider scrubber lays out via `frame` while transformed, which
+        // draws a second vertical track through mid-page on wide Duo canvases and
+        // duplicates the WKWebView scroll indicator. Keep it hidden; use the system bar.
+        slider.alpha = 0
+        slider.isUserInteractionEnabled = false
+        visible = false
     }
 
 

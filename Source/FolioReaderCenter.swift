@@ -206,11 +206,10 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         }
 
         guard let readerContainer = readerContainer else { return }
+        // Still created for scroll-delegate bookkeeping, but the slider is not added —
+        // the rotated scrubber painted a second bar through the text on Duo.
         self.scrollScrubber = ScrollScrubber(frame: frameForScrollScrubber(), withReaderContainer: readerContainer)
         self.scrollScrubber?.delegate = self
-        if let scrollScrubber = scrollScrubber {
-            view.addSubview(scrollScrubber.slider)
-        }
     }
 
     override open func viewWillAppear(_ animated: Bool) {
